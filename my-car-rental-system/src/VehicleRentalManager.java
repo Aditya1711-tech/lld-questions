@@ -10,10 +10,16 @@ import java.util.List;
 import java.util.Objects;
 
 public class VehicleRentalManager {
-    private static List<WareHouse> wareHouses;
-    private static PaymentStrategy paymentStrategy;
+    private static VehicleRentalManager vehicleRentalManagerInstance;
+    private List<WareHouse> wareHouses;
+    private PaymentStrategy paymentStrategy;
 
-    private static boolean bookVehicle(String vehicleIdentifier, int numberOfDays, int numberOfVehicles) {
+    private VehicleRentalManager() {
+        this.wareHouses = new ArrayList<>();
+        this.paymentStrategy = new CashPaymentStrategy();
+    }
+
+    public boolean bookVehicle(String vehicleIdentifier, int numberOfDays, int numberOfVehicles) {
         for (WareHouse wareHouse : wareHouses) {
             if(wareHouse.isVehicleAvailable(vehicleIdentifier, numberOfVehicles)) {
                 Vehicle vehicle = wareHouse.getByIdentifier(vehicleIdentifier);
@@ -27,22 +33,30 @@ public class VehicleRentalManager {
         return false;
     }
 
-    public static void main(String[] args) {
-        wareHouses = new ArrayList<>();
-        paymentStrategy = new CashPaymentStrategy();
+    public static synchronized VehicleRentalManager getVehicleRentalManagerInstance() {
+        if(vehicleRentalManagerInstance == null) {
+            vehicleRentalManagerInstance = new VehicleRentalManager();
+        }
+        return vehicleRentalManagerInstance;
+    }
 
-        WareHouse CalanguteWareHouse  = new WareHouse("Calangute Beach");
-        WareHouse BagaWareHouse = new WareHouse("Baga Beach");
-        wareHouses.add(CalanguteWareHouse);
-        wareHouses.add(BagaWareHouse);
+    public void addWareHouse(WareHouse wareHouse){
+        wareHouses.add(wareHouse);
+    }
 
-        CalanguteWareHouse.addVehicle(Objects.requireNonNull(VehicleFactory.createVehicle(VehicleType.CAR, "CAR123", "car", 10000, 50000, 10)));
-        BagaWareHouse.addVehicle(Objects.requireNonNull(VehicleFactory.createVehicle(VehicleType.CAR, "CAR123", "car", 10000, 50000, 10)));
+    public List<WareHouse> getWareHouses() {
+        return wareHouses;
+    }
 
-        CalanguteWareHouse.addVehicle(Objects.requireNonNull(VehicleFactory.createVehicle(VehicleType.CAR, "BIKE123", "bike", 2000, 5000, 30)));
-        BagaWareHouse.addVehicle(Objects.requireNonNull(VehicleFactory.createVehicle(VehicleType.CAR, "BIKE123", "bike", 2000, 5000, 30)));
+    public void setWareHouses(List<WareHouse> wareHouses) {
+        this.wareHouses = wareHouses;
+    }
 
-        bookVehicle("CAR123", 2, 2);
-        bookVehicle("CAR123", 5, 10);
+    public PaymentStrategy getPaymentStrategy() {
+        return paymentStrategy;
+    }
+
+    public void setPaymentStrategy(PaymentStrategy paymentStrategy) {
+        this.paymentStrategy = paymentStrategy;
     }
 }
